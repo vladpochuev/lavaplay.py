@@ -20,6 +20,7 @@ class Player:
         self._voice_handlers: t.Dict[int, ConnectionInfo] = {}
         self._voice_info: t.Dict[int, VoiceInfo] = {}
 
+        self.is_paused: bool = False
         self._volume: int = 100
         self._filters: Filters = Filters()
         self.queue: t.List[Track] = []
@@ -114,7 +115,7 @@ class Player:
         ---------
         filters: :class:`Filters`
             add filters to the track
-        """     
+        """
         if not filters:
             filters = Filters()
         filters._payload["guildId"] = str(self.guild_id)
@@ -142,7 +143,7 @@ class Player:
     async def skip(self) -> None:
         """
         Skip the track
-        """        
+        """
         if len(self.queue) == 0:
             return
         await self.rest.update_player(
@@ -159,14 +160,15 @@ class Player:
         ---------
         stats: :class:`bool`
             the stats for repeat track
-        """        
-        await self.rest.update_player(
+        """
+        res = await self.rest.update_player(
             session_id=self.node.session_id,
             guild_id=self.guild_id,
             data={
                 "paused": stats
             }
         )
+        self.is_paused = res["paused"]
 
     async def seek(self, position: int) -> None:
         """
@@ -176,7 +178,7 @@ class Player:
         ---------
         position: :class:`int`
             the position is in milliseconds
-        """        
+        """
         await self.rest.update_player(
             session_id=self.node.session_id,
             guild_id=self.guild_id,
@@ -200,7 +202,7 @@ class Player:
             if volume is not in range from 0 to 1000.
         """
         if volume < 0 or volume > 1000:
-            raise VolumeError("Volume may range from 0 to 1000. 100 is default", self.guild_id)        
+            raise VolumeError("Volume may range from 0 to 1000. 100 is default", self.guild_id)
         self._volume = volume
         await self.rest.update_player(
             session_id=self.node.session_id,
@@ -223,7 +225,7 @@ class Player:
         --------
         :exc:`.NodeError`
             If guild not found in nodes cache.
-        """        
+        """
         await self.rest.destroy_player(self.node.session_id, self.guild_id)
 
     def shuffle(self, state: bool = True) -> t.List[Track]:
@@ -234,7 +236,7 @@ class Player:
         ---------
         state: :class:`bool`
             the stats for shuffle track (unused)
-        """        
+        """
         if not self.queue:
             return []
         self._shuffle = state  # unused
@@ -252,7 +254,7 @@ class Player:
         ---------
         position: :class:`int`
             the position of the track in the queue
-        """        
+        """
         if not self.queue:
             return
         self.queue.pop(position)
@@ -265,7 +267,7 @@ class Player:
         ---------
         position: :class:`int`
             the position of the track in the queue
-        """        
+        """
         if not self.queue:
             return None
         elif position > len(self.queue):
@@ -302,6 +304,7 @@ class Player:
                 }
             }
         )
+        self.is_paused = res["paused"]
         self._is_connected = res["state"]["connected"]
         self._ping = res["state"]["ping"]
 
