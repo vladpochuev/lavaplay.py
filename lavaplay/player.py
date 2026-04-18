@@ -66,9 +66,12 @@ class Player:
                 guild_id=self.guild_id,
                 data={"track": {"encoded": track.encoded}}
             )
-        if not start:
-            track.requester = requester
-            self.queue.append(track)
+        if start:
+            self.queue.clear()
+
+        track.requester = requester
+        self.queue.append(track)
+        self.is_paused = False
 
     async def play_playlist(self, playlist: PlayList, requester: t.Optional[int] = None) -> None:
         """
