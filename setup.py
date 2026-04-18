@@ -16,14 +16,14 @@ if not version:
 
 
 setup(
-    name='lavaplay.py',
+    name='lavaplay-glimpse.py',
     version=version,
-    description='Its a lavalink nodes manger to make a music bots for discord with python.',
+    description='Fork of lavaplay.py made for glimpse. Original repository: https://github.com/HazemMeqdad/lavaplay.py',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/HazemMeqdad/lavaplay.py',
-    author='HazemMeqdad',
-    author_email='hazemmeqdad@outlook.com',
+    url='https://github.com/vladpochuev/lavaplay.py',
+    author='vladpochuev',
+    author_email='pochuev.vladislav@gmail.com',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -41,8 +41,7 @@ setup(
     packages=["lavaplay"],
     install_requires=["aiohttp"],
     project_urls={
-        'Bug Reports': 'https://github.com/HazemMeqdad/lavaplay.py/issues',
-        'Source': 'https://github.com/HazemMeqdad/lavaplay.py/',
-        'Documentation': 'https://lavaplay.readthedocs.io/en/latest'
+        'Source': 'https://github.com/vladpochuev/lavaplay.py',
+        'Original source': 'https://github.com/HazemMeqdad/lavaplay.py'
     },
 )
