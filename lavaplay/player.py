@@ -21,7 +21,7 @@ class Player:
         self._voice_info: t.Dict[int, VoiceInfo] = {}
 
         self.is_paused: bool = False
-        self._volume: int = 100
+        self.volume: int = 100
         self._filters: Filters = Filters()
         self.queue: t.List[Track] = []
         self.loop: asyncio.AbstractEventLoop = node.loop
@@ -206,7 +206,7 @@ class Player:
         """
         if volume < 0 or volume > 1000:
             raise VolumeError("Volume may range from 0 to 1000. 100 is default", self.guild_id)
-        self._volume = volume
+        self.volume = volume
         await self.rest.update_player(
             session_id=self.node.session_id,
             guild_id=self.guild_id,
@@ -308,6 +308,7 @@ class Player:
             }
         )
         self.is_paused = res["paused"]
+        self.volume = res["volume"]
         self._is_connected = res["state"]["connected"]
         self._ping = res["state"]["ping"]
 
