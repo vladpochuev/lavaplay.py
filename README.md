@@ -52,6 +52,7 @@ bot.run()
 ```
 
 examples for some methods.
+
 ```python
 # Player object
 player = node.get_player(guild_id)
@@ -69,7 +70,7 @@ await player.skip()
 await player.pause(stats)
 
 # Volume
-await player.volume(volume)
+await player.set_volume(volume)
 ```
 
 # Features

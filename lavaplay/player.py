@@ -190,7 +190,7 @@ class Player:
             }
         )
 
-    async def volume(self, volume: int) -> None:
+    async def set_volume(self, volume: int) -> None:
         """
         Set volume for a player track.
 
