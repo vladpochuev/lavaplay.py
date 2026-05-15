@@ -168,14 +168,14 @@ class WS:
                 player.queue.append(player.queue.pop(0))
                 if len(player.queue) == 0:
                     return
-                await player.play(player.queue[0], player.queue[0].requester, True)
+                await player.play(player.queue[0], player.queue[0].requester)
                 return
             if player.is_repeat:
                 await player.play(track, player.queue[0].requester, True)
                 return
             player.queue.pop(0)
             if len(player.queue) != 0:
-                await player.play(player.queue[0], player.queue[0].requester, True)
+                await player.play(player.queue[0], player.queue[0].requester)
 
         elif event == "TrackExceptionEvent":
             payload["exception"] = TrackException.from_kwargs(**payload["exception"])
