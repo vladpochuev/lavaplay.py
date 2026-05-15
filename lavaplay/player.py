@@ -285,6 +285,13 @@ class Player:
             return
         self.queue.pop(position)
 
+    async def set_queue_index(self, index: int) -> None:
+        if len(self.queue) > index:
+            self.queue = self.queue[index - 1:]
+            await self.skip()
+        else:
+            raise IndexError("Index out of range")
+
     def index(self, position: int) -> t.Union[Track, None]:
         """
         Get the track at a specific position in the queue.
@@ -338,7 +345,7 @@ class Player:
     async def raw_voice_state_update(self, user_id: int, session_id: str, channel_id: t.Optional[int]) -> None:
         """
         A voice state update has been received from Discord.
-        
+
         Parameters
         ---------
         user_id: :class:`int`
@@ -358,7 +365,7 @@ class Player:
     async def raw_voice_server_update(self, endpoint: str, token: str) -> None:
         """
         A voice server update has been received from Discord.
-        
+
         Parameters
         ---------
         endpoint: :class:`str`
