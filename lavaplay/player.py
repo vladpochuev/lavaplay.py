@@ -50,14 +50,14 @@ class Player:
 
     async def play(self, track: Track, requester: t.Optional[int] = None, from_begin: bool = False) -> None:
         """
-        Play track or add to the queue list.
+        Play track
 
         Parameters
         ---------
         requester: :class:`int`
             user id for requester the play track
-        start: :class:`bool`
-            force play queue is ignored
+        from_begin: :class:`bool`
+            force queue to be cleared
         """
         if not track.encoded:
             raise ValueError("Encoded of the track is None")
@@ -76,14 +76,12 @@ class Player:
 
     async def add_track_to_queue(self, track: Track, requester: t.Optional[int] = None) -> None:
         """
-        Play track or add to the queue list.
+        Add track to the queue list
 
         Parameters
         ---------
         requester: :class:`int`
             user id for requester the play track
-        start: :class:`bool`
-            force play queue is ignored
         """
 
         if not track.encoded:
