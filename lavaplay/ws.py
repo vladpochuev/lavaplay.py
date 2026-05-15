@@ -6,30 +6,32 @@ from .objects import (
     Stats, Cpu, Memory, FrameStats
 )
 from .events import (
-    TrackEndEvent, TrackExceptionEvent, TrackStuckEvent, 
-    TrackStartEvent, ReadyEvent, PlayerState, 
+    TrackEndEvent, TrackExceptionEvent, TrackStuckEvent,
+    TrackStartEvent, ReadyEvent, PlayerState,
     PlayerUpdateEvent, StatsUpdateEvent, TrackException,
     WebSocketClosedEvent
 )
 from .emitter import Emitter
 import typing as t
 from . import __version__
+
 if t.TYPE_CHECKING:
     from .node_manager import Node
 
 _LOG = logging.getLogger("lavaplay.ws")
 
+
 class WS:
     def __init__(
-        self,
-        node: "Node",
-        host: str,
-        port: int,
-        ssl: bool = False,
-        password: str = None,
-        user_id: int = None,
-        shards_count: int = None,
-        loop: t.Optional[asyncio.AbstractEventLoop] = None,
+            self,
+            node: "Node",
+            host: str,
+            port: int,
+            ssl: bool = False,
+            password: str = None,
+            user_id: int = None,
+            shards_count: int = None,
+            loop: t.Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
         self.ws = None
         self.ws_url = f"{'wss' if ssl else 'ws'}://{host}:{port}/v4/websocket"
@@ -44,7 +46,7 @@ class WS:
         self.emitter: Emitter = node.event_manager
         self.is_connect: bool = False
         self._session_id: str = None
-    
+
     @property
     def session_id(self) -> str:
         return self._session_id
@@ -57,10 +59,11 @@ class WS:
                 self.ws = await self.session.ws_connect(self.ws_url)
                 if session is None:
                     await self.check_connection()
-            except (aiohttp.ClientConnectorError, aiohttp.WSServerHandshakeError, aiohttp.ServerDisconnectedError) as error:
+            except (aiohttp.ClientConnectorError, aiohttp.WSServerHandshakeError,
+                    aiohttp.ServerDisconnectedError) as error:
                 if isinstance(error, (aiohttp.ClientConnectorError, aiohttp.ServerDisconnectedError)):
                     _LOG.error(f"Could not connect to websocket: {error}")
-                    _LOG.warning("Reconnecting to websocket after 10 seconds")  
+                    _LOG.warning("Reconnecting to websocket after 10 seconds")
                     await asyncio.sleep(10)
                     await self._connect()
                     return
@@ -110,7 +113,7 @@ class WS:
             else:
                 _LOG.info("Lavalink client started a new session successfully")
             self.emitter.emit("ReadyEvent", data=ReadyEvent.from_kwargs(**payload))
-        
+
         # https://lavalink.dev/api/websocket.html#player-update-op
         elif payload["op"] == "playerUpdate":
             payload.pop("op")
@@ -126,7 +129,7 @@ class WS:
             payload["state"] = PlayerState.from_kwargs(**payload["state"])
             data = PlayerUpdateEvent.from_kwargs(**payload)
             self.emitter.emit("PlayerUpdateEvent", data)
-        
+
         # https://lavalink.dev/api/websocket.html#stats-op
         elif payload["op"] == "stats":
             payload.pop("op")
@@ -141,7 +144,7 @@ class WS:
         # https://lavalink.dev/api/websocket.html#event-op
         elif payload["op"] == "event" and payload.get("track") is not None:
             await self.event_dispatch(payload)
-            
+
     async def event_dispatch(self, payload: dict):
         # encodedTrack is for Lavalink new version v4
         if payload["track"]["encoded"]:
@@ -168,14 +171,14 @@ class WS:
                 player.queue.append(player.queue.pop(0))
                 if len(player.queue) == 0:
                     return
-                await player.play(player.queue[0], player.queue[0].requester)
+                await player.play(player.queue[0], player.queue[0].requester, from_begin=False)
                 return
             if player.is_repeat:
-                await player.play(track, player.queue[0].requester, True)
+                await player.play(track, player.queue[0].requester, from_begin=True)
                 return
             player.queue.pop(0)
             if len(player.queue) != 0:
-                await player.play(player.queue[0], player.queue[0].requester)
+                await player.play(player.queue[0], player.queue[0].requester, from_begin=False)
 
         elif event == "TrackExceptionEvent":
             payload["exception"] = TrackException.from_kwargs(**payload["exception"])
@@ -186,7 +189,7 @@ class WS:
 
         elif event == "WebSocketClosedEvent":
             self.emitter.emit("WebSocketClosedEvent", WebSocketClosedEvent.from_kwargs(**payload))
-        
+
         else:
             _LOG.warning(f"Unknown event: {event}")
 

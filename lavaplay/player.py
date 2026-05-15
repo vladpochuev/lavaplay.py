@@ -1,9 +1,11 @@
-import typing as t
 import asyncio
-from .objects import Track, Filters, ConnectionInfo, PlayList, VoiceInfo
-from .exceptions import VolumeError
-import random
 import logging
+import random
+import typing as t
+
+from .exceptions import VolumeError
+from .objects import Track, Filters, ConnectionInfo, PlayList, VoiceInfo
+
 if t.TYPE_CHECKING:
     from .node_manager import Node
 
@@ -46,7 +48,7 @@ class Player:
         for track in tracks:
             self.loop.create_task(self.play(self.guild_id, track, requester))
 
-    async def play(self, track: Track, requester: t.Optional[int] = None, start: bool = False) -> None:
+    async def play(self, track: Track, requester: t.Optional[int] = None, from_begin: bool = False) -> None:
         """
         Play track or add to the queue list.
 
@@ -60,18 +62,41 @@ class Player:
         if not track.encoded:
             raise ValueError("Encoded of the track is None")
 
-        if len(self.queue) == 0 or start:
+        await self.rest.update_player(
+            session_id=self.node.session_id,
+            guild_id=self.guild_id,
+            data={"track": {"encoded": track.encoded}})
+
+        if from_begin:
+            self.queue.clear()
+            self.queue.append(track)
+
+        track.requester = requester
+        self.is_paused = False
+
+    async def add_track_to_queue(self, track: Track, requester: t.Optional[int] = None) -> None:
+        """
+        Play track or add to the queue list.
+
+        Parameters
+        ---------
+        requester: :class:`int`
+            user id for requester the play track
+        start: :class:`bool`
+            force play queue is ignored
+        """
+
+        if not track.encoded:
+            raise ValueError("Encoded of the track is None")
+
+        if len(self.queue) == 0:
             await self.rest.update_player(
                 session_id=self.node.session_id,
                 guild_id=self.guild_id,
-                data={"track": {"encoded": track.encoded}}
-            )
-        if start:
-            self.queue.clear()
+                data={"track": {"encoded": track.encoded}})
 
         track.requester = requester
         self.queue.append(track)
-        self.is_paused = False
 
     async def play_playlist(self, playlist: PlayList, requester: t.Optional[int] = None) -> None:
         """
@@ -348,7 +373,6 @@ class Player:
             return
         self._voice_info[self.guild_id] = VoiceInfo(token, endpoint)
         await self.voice_update(connection_info.session_id, token, endpoint, connection_info.channel_id)
-
 
     @property
     def is_connected(self) -> bool:
